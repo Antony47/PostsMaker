@@ -1,61 +1,66 @@
-import postService from "../../service/PostService.js";
+import postService, {PostService} from "../../service/post.service";
+import {Request, Response} from "express";
+
 
 class PostController{
 
-    constructor(postService) {
+    private postService: PostService;
+
+    constructor(postService: PostService) {
         this.postService = postService
     }
 
-    async create(req, res){
+    async create(req: Request, res: Response){
         try{
             const post = await this.postService.create(req.body)
             res.status(200).json(post)
-        }catch (e){
+        }catch (e: any){
             res.status(500).json(e.message)
         }
     }
 
-    async getAll(req, res){
+    async getMany(req: Request, res: Response){
         try {
-            const posts = await this.postService.getAll();
+            const posts = await this.postService.getMany();
             return res.json(posts);
-        } catch (e){
+        } catch (e: any){
             res.status(500).json(e.message)
         }
     }
 
-    async getOne(req, res){
+    async getOne(req: Request, res: Response){
         try {
-            const post = await this.postService.getOne(req.params.id);
+            const post = await this.postService.getOne(Number(req.params.id));
             return res.json(post);
-        } catch (e){
+        } catch (e: any){
             res.status(500).json(e.message)
         }
     }
 
-    async getByName(req, res){
+    async filter(req: Request, res: Response){
         try {
-            const post = await this.postService.getByName(req.params.name);
+            const post = await this.postService.filter(req.body);
             return res.json(post);
-        } catch (e){
+        } catch (e: any){
             res.status(500).json(e.message)
         }
     }
 
-    async update(req, res){
+    async update(req: Request, res: Response){
         try {
             const updatedPost = await this.postService.update(req.body)
             return res.json(updatedPost);
-        }catch (e){
+        }catch (e: any){
             res.status(500).json(e.message)
         }
     }
 
-    async delete(req, res){
+
+    async delete(req: Request, res: Response){
         try {
-            const post = await this.postService.delete(req.params.id)
+            const post = await this.postService.delete(Number(req.params.id))
             return res.json(post)
-        }catch (e){
+        }catch (e: any){
             res.status(500).json(e.message)
         }
     }
