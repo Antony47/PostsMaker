@@ -1,51 +1,42 @@
 import {Post} from "../integration/entities/Post";
-import {IPost} from "../integration/interfaces/IPost";
+import {CreatePostDto, UpdatePostDto} from "../integration/interfaces/IPost";
 import {IFilter} from "../integration/requests/filter.request";
 
 export class PostService{
 
-    async create(post: Post){
-        const createdPost = await Post.create(post)
-        return createdPost.save();
+    async create(post: CreatePostDto){
+        const createdPost = Post.create(post as any)
+        const {id} = await createdPost.save();
+        return {id};
     }
 
-    async getMany(){
-        const posts = await Post.find();
-        return posts;
-    }
+    async getMany(filter: IFilter){
 
-    async filter(filter: IFilter){//offset: number, limit: number, searchTitle?: string
-        const posts = (filter.searchTitle) ? await Post.createQueryBuilder().offset(filter.offset).limit(filter.limit).where(`title LIKE :q`, {q: `%${filter.searchTitle}%`}).execute()
-        : await Post.createQueryBuilder().offset(filter.offset).limit(filter.limit).execute();
+        const queryBuilder = Post.createQueryBuilder().offset(filter.offset).limit(filter.limit);
+         if(filter.searchTitle){
+            queryBuilder.where(`title ILIKE :q`, {q: `%${filter.searchTitle}%`})
+         }
 
-        return posts;
+         const [posts, total] = await queryBuilder.getManyAndCount();
+         return { posts, total};
     }
 
     async getOne(id: number){
-        if(!id){
-            throw new Error('ID not specified')
-        }
-        const post = await Post.findBy({id: id});
+        const post = await Post.findOneBy({id: id});
+        if(!post) throw new Error("Post not found");
         return post;
     }
 
-    async update(post: IPost){
-        if(!post.id){
-            throw new Error('ID not specified')
-        }
+    async update(id: number, dto: UpdatePostDto){
+        const existedPost = await this.getOne(id);
+        const updDto = {...dto, edit: true};
+        const post = Post.merge(existedPost, updDto as any)
 
-        const p = {edit: true, ...post};
-        const updatedPost = await Post.update(post.id, p);
-        return updatedPost;
+        await Post.save(post)
     }
 
     async delete(id: number){
-        if(!id){
-            throw new Error('ID not specified')
-        }
-        const removedPost = await Post.delete({id: id});
-
-        return removedPost;
+        await Post.delete({id: id});
     }
 }
 

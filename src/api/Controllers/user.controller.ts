@@ -20,7 +20,7 @@ class UserController{
 
     async getMany(req: Request, res: Response){
         try{
-            const user = await this.userService.getMany()
+            const user = await this.userService.getMany(req.body)
             res.status(200).json(user)
         }catch (e: any){
             res.status(500).json(e.message)
@@ -38,7 +38,7 @@ class UserController{
 
     async update(req: Request, res: Response) {
         try{
-            const user = await this.userService.update(req.body)
+            const user = await this.userService.update(Number(req.params.id), req.body)
             res.status(200).json(user)
         }catch (e: any){
             res.status(500).json(e.message)

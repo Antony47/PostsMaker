@@ -1,10 +1,11 @@
 import {User} from "../integration/entities/User"
-import {IUser} from "../integration/interfaces/IUser";
+import {CreateUserDto, UpdateUserDto} from "../integration/interfaces/IUser";
 import bcrypt from 'bcrypt';
+import {IUserFilter} from "../integration/requests/filter.users.request";
 
-export class UserService{//update, getOne, delete
+export class UserService{
 
-    async create(user: IUser){
+    async create(user: CreateUserDto){
         const testUser = await User.findOne({
             where:{
                 email: user.email
@@ -23,26 +24,24 @@ export class UserService{//update, getOne, delete
             age: user.age,
         })
 
-
-        return createdUser.save();
+        const {id} = await createdUser.save();
+        return {id};
     }
 
-    async getMany(){
-        const users = User.find();
-        return users;
+
+    async getMany(filter: IUserFilter){
+        const queryBuilder = User.createQueryBuilder().offset(filter.offset).limit(filter.limit);
+        if(filter.searchEmail){
+            queryBuilder.where(`email ILIKE :q`, {q: `%${filter.searchEmail}%`})
+        }
+
+        const [users, total] = await queryBuilder.getManyAndCount();
+        return { users, total};
     }
 
 
     async getOne(id: number){
-        if(!id){
-            throw new Error('ID not specified')
-        }
-
-        const searchedUser = await User.findOne({
-            where:{
-                id: id
-            }
-        });
+        const searchedUser = await User.findOneBy({id: id});
         if(!searchedUser){
             throw new Error('This user doesnt exist');
         }
@@ -51,26 +50,24 @@ export class UserService{//update, getOne, delete
     }
 
 
-    async update(user: IUser){
+    async update(id: number, dto: UpdateUserDto){
 
+        const existedUser = await this.getOne(id);
         const saltRounds = Number(process.env.SALT_ROUNDS as string);
 
-        await User.update(user.id, user);
-        return this.getOne(user.id);
+        if(dto.password)
+            dto.password = await bcrypt.hash(dto.password, saltRounds)
+
+        const updatedUser = User.merge(existedUser, dto);
+        await User.save(updatedUser)
     }
 
     async delete(id: number){
-
-        const searchedUser = await this.getOne(id);
-
-        const removedUser = await User.remove(searchedUser)
-
-        return removedUser;
+        await User.delete({id: id})
     }
 
 
-    async verification(user: IUser){
-
+    async verification(user: CreateUserDto){
         const testUser = await User.findOne({
             where:{
                 email: user.email
