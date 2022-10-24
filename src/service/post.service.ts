@@ -1,7 +1,9 @@
 import {Post} from "../integration/entities/Post";
-import {CreatePostDto, UpdatePostDto} from "../integration/interfaces/IPost";
+import {CreatePostDto, UpdatePostDto} from "../integration/dto/IPost";
 import {IFilter} from "../integration/requests/filter.request";
+import {Injectable} from "@nestjs/common";
 
+@Injectable()
 export class PostService{
 
     async create(post: CreatePostDto){
@@ -39,5 +41,3 @@ export class PostService{
         await Post.delete({id: id});
     }
 }
-
-export default new PostService();

@@ -1,17 +1,15 @@
-import postService, {PostService} from "../../service/post.service";
+import {PostService} from "../../service/post.service";
 import {Request, Response} from "express";
-import {IFilter} from "../../integration/requests/filter.request";
+import {Controller, Delete, Get, Param, Patch, Post, Req, Res} from "@nestjs/common";
 
 
-class PostController{
+@Controller('posts')
+export class PostsController {
 
-    private postService: PostService;
+    constructor(private readonly postService: PostService) {}
 
-    constructor(postService: PostService) {
-        this.postService = postService
-    }
-
-    async create(req: Request, res: Response){
+    @Post()
+    async create(@Req() req: Request, @Res() res: Response){
         try{
 
             const post = await this.postService.create(req.body)
@@ -21,17 +19,18 @@ class PostController{
         }
     }
 
-
-    async getOne(req: Request, res: Response){
+    @Get(':id')
+    async getOne(@Param('id') id:number, @Res() res: Response){
         try {
-            const post = await this.postService.getOne(Number(req.params.id));
+            const post = await this.postService.getOne(id);
             return res.json(post);
         } catch (e: any){
             res.status(500).json(e.message)
         }
     }
 
-    async getMany(req: Request<{Body: IFilter}>, res: Response){
+    @Get()
+    async getMany(@Req() req: Request, @Res() res: Response){
         try {
             const post = await this.postService.getMany(req.body);
             return res.json(post);
@@ -40,25 +39,24 @@ class PostController{
         }
     }
 
-    async update(req: Request, res: Response){
+    @Patch(':id')
+    async update(@Param('id') id: number, @Req() req: Request, @Res() res: Response){
         try {
-            const updatedPost = await this.postService.update(Number(req.params.id), req.body)
+            const updatedPost = await this.postService.update(id, req.body)
             return res.json(updatedPost);
         }catch (e: any){
             res.status(500).json(e.message)
         }
     }
 
-
-    async delete(req: Request, res: Response){
+    @Delete(':id')
+    async delete(@Param('id') id: number, @Res() res: Response){
         try {
-            const post = await this.postService.delete(Number(req.params.id))
+            const post = await this.postService.delete(id)
             return res.json(post)
         }catch (e: any){
             res.status(500).json(e.message)
         }
     }
 }
-
-export default new PostController(postService);
 

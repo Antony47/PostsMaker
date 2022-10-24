@@ -1,3 +1,4 @@
+/*
 import express from "express"
 import "reflect-metadata"
 import {DataSource} from "typeorm"
@@ -48,3 +49,4 @@ const main = async () => {
 }
 
 main()
+*/

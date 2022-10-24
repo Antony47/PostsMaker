@@ -1,24 +1,24 @@
-import userService, {UserService} from "../../service/user.service";
+import {Controller, Delete, Get, Param, Patch, Post, Req, Res} from '@nestjs/common';
 import {Request, Response} from "express";
+import {UserService} from "../../service/user.service";
 
-class UserController{
+@Controller('users')
+export class UsersController{
 
-    private userService: UserService;
+    constructor(private readonly userService: UserService) {}
 
-    constructor(userService: UserService) {
-        this.userService = userService
-    }
-
-     async create(req: Request, res: Response) {
+    @Post()
+    async create(@Req() req: Request, @Res() res: Response) {
         try{
             const createdUser = await this.userService.create(req.body)
-            res.status(200).json(createdUser)
+            res.status(201).json(createdUser)
         }catch (e: any){
             res.status(500).json(e.message)
         }
     }
 
-    async getMany(req: Request, res: Response){
+    @Get()
+    async getMany(@Req() req: Request, @Res() res: Response){
         try{
             const user = await this.userService.getMany(req.body)
             res.status(200).json(user)
@@ -27,27 +27,30 @@ class UserController{
         }
     }
 
-    async getOne(req: Request, res: Response) {
+    @Get(':id')
+    async getOne(@Param('id') id: number, @Res() res: Response) {
         try{
-            const user = await this.userService.getOne(Number(req.params.id))
+            const user = await this.userService.getOne(id)
             res.status(200).json(user)
         }catch (e: any){
             res.status(500).json(e.message)
         }
     }
 
-    async update(req: Request, res: Response) {
+    @Patch(':id')
+    async update(@Param('id') id: number, @Req() req: Request, @Res() res: Response) {
         try{
-            const user = await this.userService.update(Number(req.params.id), req.body)
+            const user = await this.userService.update(id, req.body)
             res.status(200).json(user)
         }catch (e: any){
             res.status(500).json(e.message)
         }
     }
 
-    async delete(req: Request, res: Response) {
+    @Delete(':id')
+    async delete(@Param('id') id: number, @Res() res: Response) {
         try{
-            const user = await this.userService.delete(Number(req.params.id))
+            const user = await this.userService.delete(id)
             res.status(200).json(user)
         }catch (e: any){
             res.status(500).json(e.message)
@@ -55,14 +58,12 @@ class UserController{
     }
 
 
-    async verify(req: Request, res: Response) {
+    /*async verify(req: Request, res: Response) {
         try{
             const verifyUser = await this.userService.verification(req.body)
             res.status(200).json(verifyUser)
         }catch (e: any){
             res.status(500).json(e.message)
         }
-    }
+    }*/
 }
-
-export default new UserController(userService)

@@ -1,9 +1,13 @@
 import {User} from "../integration/entities/User"
-import {CreateUserDto, UpdateUserDto} from "../integration/interfaces/IUser";
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt"
 import {IUserFilter} from "../integration/requests/filter.users.request";
+import {Injectable} from "@nestjs/common";
+import {CreateUserDto, UpdateUserDto} from "../integration/dto/IUser";
 
+@Injectable()
 export class UserService{
+
+
 
     async create(user: CreateUserDto){
         const testUser = await User.findOne({
@@ -58,7 +62,7 @@ export class UserService{
         if(dto.password)
             dto.password = await bcrypt.hash(dto.password, saltRounds)
 
-        const updatedUser = User.merge(existedUser, dto);
+        const updatedUser = User.merge(existedUser, dto as any);
         await User.save(updatedUser)
     }
 
@@ -86,5 +90,3 @@ export class UserService{
         }
     }
 }
-
-export default new UserService();
