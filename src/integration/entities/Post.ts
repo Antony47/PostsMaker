@@ -2,22 +2,16 @@ import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
-    BaseEntity,
     ManyToOne,
     CreateDateColumn,
-    UpdateDateColumn
+    UpdateDateColumn, JoinColumn
 } from "typeorm";
 import {User} from "./User"
 
 @Entity()
-export class Post extends BaseEntity{
+export class Post{
     @PrimaryGeneratedColumn()
     id!: number;
-
-    @Column({
-        type: 'varchar'
-    })
-    email!: string;
 
     @Column({
         type: 'varchar'
@@ -39,5 +33,8 @@ export class Post extends BaseEntity{
     edit!: boolean
 
     @ManyToOne(() => User, (user) => user.posts)
+    @JoinColumn({ name: "user_id" , referencedColumnName: "id" })
     user!: User
+
+
 }
