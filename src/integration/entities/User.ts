@@ -2,15 +2,15 @@ import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
-    BaseEntity,
     OneToMany,
     CreateDateColumn,
     UpdateDateColumn
 } from "typeorm";
 import {Post} from "./Post"
+import {Role} from "../../enum/role.enum";
 
 @Entity()
-export class User extends BaseEntity{
+export class User{
     @PrimaryGeneratedColumn()
     id!: number;
 
@@ -35,7 +35,9 @@ export class User extends BaseEntity{
     @UpdateDateColumn()
     updatedAt!: Date
 
-    @OneToMany(() => Post, (post) => post.email) // note: we will create author property in the Photo class below
+    @OneToMany(() => Post, (post) => post.user) // note: we will create author property in the Photo class below
     posts?: Post[]
-
+/*
+    @Column()
+    roles: Role[];*/
 }

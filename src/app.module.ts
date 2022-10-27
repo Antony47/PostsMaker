@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
-import {UserService} from "./service/user.service";
-import {PostService} from "./service/post.service";
-import {UsersController} from "./api/Controllers/users.controller";
-import {PostsController} from "./api/Controllers/posts.controller";
 import {TypeOrmModule} from "@nestjs/typeorm";
 import {User} from "./integration/entities/User";
 import {Post} from "./integration/entities/Post";
+import {PostsModule} from "./modules/posts/posts.module";
+import {UsersModule} from "./modules/users/users.module";
+import { AuthModule } from './modules/auth/auth.module';
+import {APP_GUARD} from "@nestjs/core";
+import {RolesGuard} from "./guards/roles.guards";
 
 @Module({
   imports: [
@@ -19,8 +20,16 @@ import {Post} from "./integration/entities/Post";
       entities: [User, Post],
       synchronize: true,
       logging: true
-    })],
-  controllers: [UsersController, PostsController],
-  providers: [UserService, PostService],
+    }),
+    PostsModule,
+    UsersModule,
+    AuthModule
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}
