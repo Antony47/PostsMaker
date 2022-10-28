@@ -1,38 +1,53 @@
-import {PostService} from "./post.service";
-import {Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query} from "@nestjs/common";
-import {CreatePostDto} from "./dto/create-post.dto";
-import {GetManyPostsQueryDto} from "./dto/get-many-posts-query.dto";
-import {UpdatePostDto} from "./dto/update-post.dto";
+import { PostService } from './post.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { CreatePostDto } from './dto/create-post.dto';
+import { GetManyPostsQueryDto } from './dto/get-many-posts-query.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { JwtAuthGuard } from '../auth/passports/jwt-auth.guard';
+import { User, UserPayload } from '../../shared/decorators/user.decorator';
 
-
+@UseGuards(JwtAuthGuard)
 @Controller('posts')
 export class PostsController {
+  constructor(private readonly postService: PostService) {}
 
-    constructor(private readonly postService: PostService) {}
+  @Post()
+  create(@User() user: UserPayload, @Body() dto: CreatePostDto) {
+    return this.postService.create(user.id, dto);
+  }
 
-    @Post()
-    create(@Body() dto: CreatePostDto){
-        return this.postService.create(dto)
-    }
+  @Get(':id')
+  getOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.postService.getOne(id);
+  }
 
-    @Get(':id')
-    getOne(@Param('id', ParseIntPipe) id:number){
-        return this.postService.getOne(id);
-    }
+  @Get()
+  getMany(@Query() query: GetManyPostsQueryDto) {
+    return this.postService.getMany(query.offset, query.limit, query.search);
+  }
 
-    @Get()
-    getMany(@Query() query: GetManyPostsQueryDto){//query
-        return this.postService.getMany(query.offset, query.limit, query.search);
-    }
+  @Patch(':id')
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @User() user: UserPayload,
+    @Body() dto: UpdatePostDto,
+  ) {
+    return this.postService.update(id, user.id, dto);
+  }
 
-    @Patch(':id')
-    update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdatePostDto){//-param
-        return this.postService.update(id, dto)
-    }
-
-    @Delete(':id')
-    delete(@Param('id', ParseIntPipe) id: number){///-param
-        return this.postService.delete(id)
-    }
+  @Delete(':id')
+  delete(@Param('id', ParseUUIDPipe) id: string, @User() user: UserPayload) {
+    return this.postService.delete(id, user.id);
+  }
 }
-

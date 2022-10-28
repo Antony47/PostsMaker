@@ -1,52 +1,59 @@
-import {Post} from "../../integration/entities/Post";
-import {Injectable, NotFoundException} from "@nestjs/common";
-import {CreatePostDto} from "./dto/create-post.dto";
-import {GetManyPostsQueryDto} from "./dto/get-many-posts-query.dto";
-import {InjectRepository} from "@nestjs/typeorm";
-import {Repository} from "typeorm";
-import {UpdatePostDto} from "./dto/update-post.dto";
+import { Post } from '../../integration/entities/Post';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { CreatePostDto } from './dto/create-post.dto';
+import { GetManyPostsQueryDto } from './dto/get-many-posts-query.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { UpdatePostDto } from './dto/update-post.dto';
 
 @Injectable()
-export class PostService{
+export class PostService {
+  constructor(
+    @InjectRepository(Post)
+    private postRepository: Repository<Post>,
+  ) {}
 
-    constructor(
-        @InjectRepository(Post)
-        private postRepository: Repository<Post>
-    ) {
+  async create(userId: string, dto: CreatePostDto) {
+    const post = this.postRepository.create({ ...dto, userId });
+    const { id } = await this.postRepository.save(post);
+    return { id };
+  }
+
+  async getMany(offset: number, limit: number, search?: string) {
+    const queryBuilder = this.postRepository
+      .createQueryBuilder()
+      .offset(offset)
+      .limit(limit);
+    if (search) {
+      queryBuilder.where(`title ILIKE :search`, { search: `%${search}%` });
     }
 
-    async create(dto: CreatePostDto){
-        const post = this.postRepository.create(dto)
-        const {id} = await this.postRepository.save(post);
-        return {id};
-    }
+    const [posts, total] = await queryBuilder.getManyAndCount();
+    return { posts, total };
+  }
 
-    async getMany(offset: number, limit: number, search?: string){
+  async getOne(id: string) {
+    const post = await this.postRepository.findOneBy({ id });
+    if (!post) throw new NotFoundException('Post not found');
+    return post;
+  }
 
-        const queryBuilder = this.postRepository.createQueryBuilder().offset(offset).limit(limit);
-         if(search){
-            queryBuilder.where(`title ILIKE :search`, {search: `%${search}%`})
-         }
+  async update(id: string, userId: string, dto: UpdatePostDto) {
+    const existedPost = await this.getOne(id);
+    if (existedPost.userId !== userId) throw new ForbiddenException();
 
-         const [posts, total] = await queryBuilder.getManyAndCount();
-         return {posts, total};
-    }
+    const post = this.postRepository.merge(existedPost, { ...dto, edit: true });
+    await this.postRepository.save(post);
+  }
 
-    async getOne(id: number){
-        const post = await this.postRepository.findOneBy({id});
-        if(!post) throw new NotFoundException("Post not found");
-        return post;
-    }
+  async delete(id: string, userId: string) {
+    const existedPost = await this.getOne(id);
+    if (existedPost.userId !== userId) throw new ForbiddenException();
 
-    async update(id: number, dto: UpdatePostDto){
-        const existedPost = await this.getOne(id);
-        const updDto = {...dto, edit: true};
-        const post = this.postRepository.merge(existedPost, updDto)
-
-        await this.postRepository.save(post)
-    }
-
-    async delete(id: number){
-        await this.postRepository.delete({id});
-    }
+    await this.postRepository.delete({ id });
+  }
 }

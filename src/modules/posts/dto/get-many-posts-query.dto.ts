@@ -1,14 +1,13 @@
-import {IsInt, IsOptional, IsString} from "class-validator";
+import { IsInt, IsOptional, IsString } from 'class-validator';
 
-export class GetManyPostsQueryDto{
+export class GetManyPostsQueryDto {
+  @IsInt()
+  offset: number;
 
-    @IsInt()
-    offset: number
+  @IsInt()
+  limit: number;
 
-    @IsInt()
-    limit: number
-
-    @IsOptional()
-    @IsString()
-    search?: string
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

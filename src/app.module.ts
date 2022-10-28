@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import {TypeOrmModule} from "@nestjs/typeorm";
-import {User} from "./integration/entities/User";
-import {Post} from "./integration/entities/Post";
-import {PostsModule} from "./modules/posts/posts.module";
-import {UsersModule} from "./modules/users/users.module";
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './integration/entities/User';
+import { Post } from './integration/entities/Post';
+import { PostsModule } from './modules/posts/posts.module';
+import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
-import {APP_GUARD} from "@nestjs/core";
-import {RolesGuard} from "./guards/roles.guards";
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './guards/roles.guards';
 
 @Module({
   imports: [
@@ -19,11 +19,11 @@ import {RolesGuard} from "./guards/roles.guards";
       database: process.env.POSTGRES_DB,
       entities: [User, Post],
       synchronize: true,
-      logging: true
+      logging: true,
     }),
     PostsModule,
     UsersModule,
-    AuthModule
+    AuthModule,
   ],
   providers: [
     {

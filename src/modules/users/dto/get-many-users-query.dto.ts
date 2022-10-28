@@ -1,15 +1,14 @@
-import {IsInt, IsOptional, IsString} from "class-validator";
-import {Type} from "class-transformer";
+import { IsInt, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class GetManyUsersQueryDto{
+export class GetManyUsersQueryDto {
+  @IsInt()
+  offset: number;
 
-    @IsInt()
-    offset: number
+  @IsInt()
+  limit: number;
 
-    @IsInt()
-    limit: number
-
-    @IsOptional()
-    @IsString()
-    search?: string
+  @IsOptional()
+  @IsString()
+  search?: string;
 }
